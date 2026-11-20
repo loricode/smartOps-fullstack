@@ -1,0 +1,2 @@
+# Los scripts solo usan la librería estándar; esto es para las pruebas.
+pytest>=8.0

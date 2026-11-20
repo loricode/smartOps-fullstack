@@ -1,0 +1,12 @@
+{
+  "name": "smartops-video",
+  "private": true,
+  "description": "Graba los videos de SmartOps sobre la aplicación real (ver LEEME.md)",
+  "scripts": {
+    "prueba": "node grabar.js --prueba",
+    "grabar": "node grabar.js"
+  },
+  "dependencies": {
+    "playwright-core": "^1.65.1"
+  }
+}

@@ -1,0 +1,85 @@
+spring:
+  application:
+    name: smartops
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/smartops}
+    username: ${DB_USER:smartops}
+    password: ${DB_PASSWORD:smartops}
+    hikari:
+      maximum-pool-size: 15
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate        # el esquema lo gobierna Flyway; Hibernate solo verifica coherencia
+    properties:
+      hibernate:
+        jdbc.time_zone: UTC
+        jdbc.batch_size: 100
+        order_updates: true
+  flyway:
+    schemas: smartops
+    default-schema: smartops
+    locations: classpath:db/migration
+  batch:
+    job:
+      enabled: false            # los jobs se lanzan bajo demanda desde el API
+    jdbc:
+      initialize-schema: never  # las tablas BATCH_* se versionan en V006
+      table-prefix: smartops.BATCH_
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
+  jackson:
+    default-property-inclusion: non_null
+
+server:
+  port: ${PORT:8080}
+  shutdown: graceful
+
+smartops:
+  zone: America/Bogota
+  limits:
+    max-amount-per-operation: 1000000000
+  reconciliation:
+    tolerance: 0.00
+  storage:
+    inbox: ${SMARTOPS_INBOX:./data/inbox}
+  batch:
+    import.chunk-size: 500
+    posting.chunk-size: 200
+    retry-limit: 3
+  security:
+    users:
+      - username: operator
+        password: ${OPERATOR_PASSWORD:operator123}
+        roles: [OPERATOR]
+      - username: auditor
+        password: ${AUDITOR_PASSWORD:auditor123}
+        roles: [AUDITOR]
+      - username: admin
+        password: ${ADMIN_PASSWORD:admin123}
+        roles: [OPERATOR, AUDITOR, ADMIN]
+
+management:
+  endpoints.web.exposure.include: health,info,metrics
+  endpoint.health:
+    probes.enabled: true
+    show-details: when-authorized
+  info.env.enabled: true
+
+info:
+  app:
+    name: SmartOps
+    description: Plataforma de procesamiento y conciliación de operaciones bancarias
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+
+logging:
+  pattern:
+    level: "%5p [%X{correlationId:-}]"
+  level:
+    com.smartops: INFO

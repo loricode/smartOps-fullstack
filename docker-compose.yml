@@ -1,0 +1,52 @@
+# Entorno completo: PostgreSQL + API + dashboard Angular.
+#   docker compose up --build
+#   Dashboard:  http://localhost:4200     (operator / operator123)
+#   Swagger:    http://localhost:8080/swagger-ui.html
+name: smartops
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: smartops
+      POSTGRES_USER: smartops
+      POSTGRES_PASSWORD: smartops
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U smartops -d smartops"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      DB_URL: jdbc:postgresql://postgres:5432/smartops
+      DB_USER: smartops
+      DB_PASSWORD: smartops
+    ports:
+      - "8080:8080"
+    volumes:
+      - inbox:/data/inbox
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: frontend
+    ports:
+      - "4200:80"
+    depends_on:
+      api:
+        condition: service_healthy
+
+volumes:
+  pgdata:
+  inbox:
